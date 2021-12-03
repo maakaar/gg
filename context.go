@@ -682,7 +682,7 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	} else {
 		transformer.Transform(dc.im, s2d, im, im.Bounds(), draw.Over, &draw.Options{
 			DstMask:  dc.mask,
-			DstMaskP: image.ZP,
+			DstMaskP: image.Point{},
 		})
 	}
 }
@@ -694,13 +694,23 @@ func (dc *Context) SetFontFace(fontFace font.Face) {
 	dc.fontHeight = float64(fontFace.Metrics().Height) / 64
 }
 
-func (dc *Context) LoadFontFace(path string, points float64) error {
-	face, err := LoadFontFace(path, points)
-	if err == nil {
-		dc.fontFace = face
-		dc.fontHeight = points * 72 / 96
+func (dc *Context) LoadFontFace(path string, points float64) (err error) {
+	if dc.fontFace, err = LoadFontFace(path, points); err != nil {
+		return
 	}
-	return err
+
+	dc.fontHeight = points * 72 / 96
+	return
+}
+
+func (dc *Context) LoadFontFaceBytes(src []byte, points float64) (err error) {
+	if dc.fontFace, err = LoadFontFaceBytes(src, points); err != nil {
+		return
+	}
+
+	dc.fontHeight = points * 72 / 96
+
+	return
 }
 
 func (dc *Context) FontHeight() float64 {
